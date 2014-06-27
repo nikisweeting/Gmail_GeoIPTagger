@@ -56,7 +56,9 @@ function ProcessMsg(msg,GlobalLables,thread) {
         var Res = EnsureWeHaveLabel(GlobalLables,Orign);
         GlobalLables = Res[1];
         Label = Res[0];
-        thread.addLabel(Label)
+        if (Orign && Orign != "Reserved" && Orign != "undefined") {
+          thread.addLabel(Label);
+        }
         break;
       }
     }
@@ -65,13 +67,27 @@ function ProcessMsg(msg,GlobalLables,thread) {
 
 function GetEmailLocation(IP) {
   try{
-    var rawjson = UrlFetchApp.fetch("http://freegeoip.net/json/" + IP);
+    var rawjson = UrlFetchApp.fetch("http://www.telize.com/geoip/" + IP);
     var obj = JSON.parse(rawjson);
-    return obj.country_name;
+    var country = obj.country;
   } catch (e) {
-    var rawjson = UrlFetchApp.fetch("http://smart-ip.net/geoip-json/" + IP);
-    var obj = JSON.parse(rawjson);
-    return obj.countryName;
+    var x = e;
+  }
+  if (country == undefined || country == "") {
+    try{
+      var rawjson = UrlFetchApp.fetch("http://ipinfo.io/" + IP);
+      var obj = JSON.parse(rawjson);
+      var country = obj.country;
+    } catch (e) {
+      var x = e;
+    }
+  }
+  if (country == undefined || country == "undefined") {
+    // not lazy programming, some geoipsites will send a quoted "undefined" if they cant find a match for an ip
+    return "";
+  }
+  else {
+    return country;
   }
 }
 
